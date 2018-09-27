@@ -25,9 +25,10 @@ class Server(object):
         self.active_games = dict()
         self.env = env
         self.queue_manager = threading.Thread(target=self.game_queue_manager)
-        self.queue_manager.start()
+        self.running = True
 
     def run(self):
+        self.queue_manager.start()
         try:
             print("Waiting for connections")
             while True:
@@ -47,9 +48,9 @@ class Server(object):
                     print("Received invalid command: ", command)
                     connection.close()
 
-
         except KeyboardInterrupt:
             print("Closing Server!")
+            self.running = False
             self.comp.exit()
             self.socket.close()
             exit()
@@ -74,26 +75,36 @@ class Server(object):
                 self.searching.append(id)
 
     def game_queue_manager(self):
-        while True:
+        while self.running:
             with self.searching_lock:
-                if len(self.searching) >= 2:
+                while len(self.searching) >= 2:
                     with self.comp_lock:
                         p1 = random.choice(self.searching)
-                        p2 = self.comp.find_best_match(random.choice(self.searching), self.searching)
+                        p2 = self.comp.find_best_match(p1, self.searching)
+                        print(self.searching, p1, p2)
+                        self.searching.remove(p1)
+                        self.searching.remove(p2)
 
+                        for p in [self.connected_players[p1], self.connected_players[p2]]:
+                            p.game_start()
                         game = self.env.start_new_game([self.connected_players[p1], self.connected_players[p2]], self)
                         self.active_games[game] = threading.Thread(target=game.play_game)
                         self.active_games[game].start()
-            time.sleep(0.1)
+            time.sleep(0.01)
 
     def end_game(self, winners, losers, game):
+        winner_ids, loser_ids = list([p.id for p in winners]), list([p.id for p in losers])
+        for p in winners + losers:
+            p.game_end(winner_ids, loser_ids)
+
         with self.comp_lock:
-            self.comp.register_win([p.id for p in winners], [p.id for p in losers])
+            self.comp.register_win(winner_ids, loser_ids)
             del self.active_games[game]
             del game
 
         with self.searching_lock:
             self.searching += list([p.id for p in winners]) + list([p.id for p in losers])
+        print("Game closed on Server")
 
 
 
@@ -101,5 +112,5 @@ class Server(object):
 
 
 if __name__ == "__main__":
-    s = Server(('localhost', 1337), "leaderboard.json", Environment())
+    s = Server(('localhost', 1338), "leaderboard.json", Environment())
     s.run()

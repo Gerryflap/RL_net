@@ -16,7 +16,7 @@ class Game(object):
 
     def get_requested_actions(self):
         actions = dict()
-        for i, t in self.wait_queue:
+        for i, t in self.wait_queue.items():
             t.join()
             actions[i] = self.players[i].last_action
         self.wait_queue.clear()

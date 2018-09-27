@@ -26,5 +26,20 @@ class RandomGame(Game):
 
 if __name__ == "__main__":
     import server
-    s = server.Server(('localhost', 1336), "randomcomp", RandomEnv())
-    s.run()
+    from environments.random_env.client import RandomClient
+    import threading
+
+    server_addr = ('localhost', 1337)
+
+    c1 = RandomClient(server_addr, "Player1", RandomEnv())
+    c2 = RandomClient(server_addr, "Player2", RandomEnv())
+    s = server.Server(server_addr, "randomcomp", RandomEnv())
+
+    s_thread = threading.Thread(target=s.run)
+    s_thread.start()
+    #s.run()
+
+    for c in [c1, c2]:
+        threading.Thread(target=c.run).start()
+
+    s_thread.join()
