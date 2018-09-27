@@ -42,8 +42,10 @@ class NetworkPlayer(object):
         except socket.timeout:
             self.handle_timeout(True)
             return
+        if len(a) == 0:
+            self.handle_timeout(True)
+            return
         action = pickle.loads(a)
-        print("Received action ", action)
         self.last_action = action
 
     def handle_timeout(self, in_game):

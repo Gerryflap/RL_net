@@ -32,10 +32,7 @@ class Player(object):
         # Main loop
         while True:
             packet = self.message_sock.recv()
-            print(packet)
-
             packet = packet.decode("UTF-8")
-
 
             if not packet.startswith("START"):
                 continue
@@ -46,18 +43,11 @@ class Player(object):
             playing = True
             while playing:
                 packet = self.message_sock.recv()
-                try:
-                    packet = packet.decode("UTF-8")
-                except UnicodeDecodeError:
-                    print(packet)
-                    print(pickle.loads(packet))
+                packet = packet.decode("UTF-8")
 
                 if packet.startswith("ACTION_REQUEST"):
-                    n_packets = int(packet.split(" ")[1])
-                    print("Receiving ", n_packets, " state packets")
                     state_packet = self.message_sock.recv()
                     state = pickle.loads(state_packet)
-                    print("State: ", state)
                     action = self.request_action(state)
                     self.message_sock.send(pickle.dumps(action))
                 else:

@@ -106,6 +106,20 @@ class Server(object):
             self.searching += list([p.id for p in winners]) + list([p.id for p in losers])
         print("Game closed on Server")
 
+    def end_game_draw(self, players, game):
+
+        pids = list([p.id for p in players])
+        for p in players:
+            p.game_end([], pids)
+
+        with self.comp_lock:
+            del self.active_games[game]
+            del game
+
+        with self.searching_lock:
+            self.searching += pids
+        print("Game closed on Server")
+
 
 
 

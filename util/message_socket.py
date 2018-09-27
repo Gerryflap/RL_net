@@ -10,6 +10,7 @@ class MessageSocket(object):
         message = (len(message)).to_bytes(4, 'big') + message
         self.socket.sendall(message)
 
+
     def recv(self):
         # Receives the next full message
         if self.remaining_bytes is not None:
