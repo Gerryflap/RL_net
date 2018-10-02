@@ -77,7 +77,7 @@ class Server(object):
                 while len(self.searching) >= 2:
                     with self.comp_lock:
                         p1 = random.choice(self.searching)
-                        print("Matchmaking with ", p1)
+                        #print("Matchmaking with ", p1)
                         p2 = self.comp.find_best_match(p1, self.searching)
                         if p1 not in self.connected_players:
                             print("Removing disconnected player from queue: ", p1.id)
@@ -87,21 +87,22 @@ class Server(object):
                             print("Removing disconnected player from queue: ", p2.id)
                             self.searching.remove(p2)
                             continue
-                        print(self.searching, p1, p2)
+                        #print(self.searching, p1, p2)
                         self.searching.remove(p1)
                         self.searching.remove(p2)
 
                         for p in [self.connected_players[p1], self.connected_players[p2]]:
                             p.game_start()
 
-                        print(self.connected_players)
+                        #print(self.connected_players)
                         game = self.env.start_new_game([self.connected_players[p1], self.connected_players[p2]], self)
                         self.active_games[game] = threading.Thread(target=game.play_game)
                         self.active_games[game].start()
-            time.sleep(0.001)
+            time.sleep(0.1)
 
     def end_game(self, winners, losers, game):
         winner_ids, loser_ids = list([p.id for p in winners]), list([p.id for p in losers])
+        #print("Game end in server: ", winner_ids, loser_ids)
         for p in winners + losers:
             p.game_end(winner_ids, loser_ids)
 

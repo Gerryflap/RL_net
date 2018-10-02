@@ -48,7 +48,7 @@ class TTTGame(Game):
         player = 0
         other_player = 1
 
-        print("Playing TTT with", self.players)
+        #print("Playing TTT with", self.players)
 
         while True:
             self.request_action(player, TTTState(self.board))
@@ -72,6 +72,7 @@ class TTTGame(Game):
                 winner = self.get_winner()
                 loser = (winner + 1)%2
                 self.report_winners([winner], [loser])
+                #print("Reported winners: ", self.players[winner], self.players[loser])
                 break
             player, other_player = other_player, player
 
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     from server import Server
     import threading
 
-    server_name = ('localhost', 1335)
+    server_name = ('localhost', 1337)
 
     s = Server(server_name, "ttt_rankings", TTTEnvironment())
     clients = [

@@ -35,8 +35,9 @@ class Game(object):
         return actions
 
     def report_winners(self, winning_ids, losing_ids):
-        print(list([self.players[i] for i in winning_ids]), list([self.players[i] for i in losing_ids]))
+        #print("Winners: ", list([self.players[i] for i in winning_ids]), list([self.players[i] for i in losing_ids]))
         self.server.end_game([self.players[i] for i in winning_ids], [self.players[i] for i in losing_ids], self)
 
     def report_draw(self):
         self.server.end_game_draw(self.players, self)
+        #print("Reported Draw")

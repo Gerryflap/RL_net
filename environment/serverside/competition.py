@@ -24,6 +24,7 @@ class Competition(object):
     def register_win(self, winner_ids, loser_ids):
         avg_winner_score = sum([self.ranks[id] for id in winner_ids]) / len(winner_ids)
         avg_loser_score = sum([self.ranks[id] for id in loser_ids]) / len(loser_ids)
+        #print("Competition recieved winners and losers: ", winner_ids, loser_ids)
 
         # This function has been determined by trail and error
         try:
