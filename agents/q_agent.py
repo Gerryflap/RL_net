@@ -32,7 +32,17 @@ class QAgent(Player):
         self.prev_sa = None
 
     def game_end(self, winners, losers):
-        pass
+        if self.prev_sa is None:
+            return
+        s,a = self.prev_sa
+        if self.name in winners:
+            r = 1
+        elif len(winners) == 0:
+            r = 0
+        else:
+            r = -1
+        self.update_Qsa(s, a, self.learning_rate * (self.gamma * r - self.Qsa(s, a)))
+
 
     def Qsa(self, s: State, a: Action):
         return self.qsa[(self.sc(s), a)]

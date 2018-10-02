@@ -27,7 +27,7 @@ class Player(object):
             except ConnectionRefusedError:
                 print("Connection refused, attempting to reconnect in 1 second...")
                 time.sleep(1)
-        self.socket.send(("CONNECT "+self.name + "\n").encode('UTF-8'))
+        self.socket.send(("CONNECT "+self.name).encode('UTF-8'))
 
         # Main loop
         while True:
@@ -56,6 +56,8 @@ class Player(object):
                     lossstr = splitted[2]
                     winners = winstr.split(",")
                     losers = lossstr.split(",")
+                    if len(winners) == 1 and winners[0] == '':
+                        winners = []
                     self.game_end(winners, losers)
                     playing = False
 

@@ -2,7 +2,7 @@ from agents.q_agent import QAgent
 from agents.random_agent import RandomAgent
 from environment.action import Action
 from environment.environment import Environment
-from environment.serverside.game import Game
+from environment.serverside.game import Game, DisconnectException
 from environment.state import State
 
 
@@ -48,9 +48,16 @@ class TTTGame(Game):
         player = 0
         other_player = 1
 
+        print("Playing TTT with", self.players)
+
         while True:
             self.request_action(player, TTTState(self.board))
-            A = self.get_requested_actions()
+            try:
+                A = self.get_requested_actions()
+            except DisconnectException:
+                print("Disconnect happened!")
+                self.report_draw()
+                return
             action = A[player]
             if self.board[action.i] != -1:
                 self.report_winners([other_player], [player])
@@ -98,7 +105,7 @@ if __name__ == "__main__":
     from server import Server
     import threading
 
-    server_name = ('localhost', 1338)
+    server_name = ('localhost', 1335)
 
     s = Server(server_name, "ttt_rankings", TTTEnvironment())
     clients = [
@@ -106,6 +113,8 @@ if __name__ == "__main__":
         RandomAgent(server_name, "Random2", TTTEnvironment()),
         QAgent(server_name, "QAgent", TTTEnvironment(), 0.9, 0.1),
         QAgent(server_name, "QAgent2", TTTEnvironment(), 0.9, 0.1),
+        QAgent(server_name, "ShortSightedQAgent", TTTEnvironment(), 0.1, 0.1),
+        QAgent(server_name, "HighGammaQAgent", TTTEnvironment(), 0.999, 0.1),
         QAgent(server_name, "SlowQAgent", TTTEnvironment(), 0.9, 0.01),
         QAgent(server_name, "FastQAgent", TTTEnvironment(), 0.9, 0.3),
     ]

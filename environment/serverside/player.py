@@ -22,7 +22,7 @@ class NetworkPlayer(object):
     def request_action(self, state: State):
         s = pickle.dumps(state)
         packs = math.ceil(len(s)/4096)
-        self.message_sock.send(("ACTION_REQUEST "+str(packs)+"\n").encode('utf-8'))
+        self.message_sock.send(("ACTION_REQUEST "+str(packs)).encode('utf-8'))
         self.message_sock.send(s)
 
         wait_thread = threading.Thread(target=self.wait)
@@ -31,10 +31,13 @@ class NetworkPlayer(object):
         return wait_thread
 
     def game_start(self):
-        self.message_sock.send("START\n".encode('utf-8'))
+        self.message_sock.send("START".encode('utf-8'))
 
     def game_end(self, winners, losers):
-        self.message_sock.send(("END %s %s\n"%(','.join(winners), ','.join(losers))).encode('utf-8'))
+        try:
+            self.message_sock.send(("END %s %s"%(','.join(winners), ','.join(losers))).encode('utf-8'))
+        except BrokenPipeError or OSError:
+            print("Cannot send game end to player: socket closed")
 
     def wait(self):
         try:
@@ -52,3 +55,6 @@ class NetworkPlayer(object):
         if in_game:
             pass
         self.server.deregister_player(self)
+
+    def __repr__(self):
+        return "Player(%s)" % self.id

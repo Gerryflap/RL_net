@@ -33,15 +33,12 @@ class Server(object):
             print("Waiting for connections")
             while True:
                 connection, client_address = self.socket.accept()
-                print("New connection: ", client_address)
 
                 command = connection.recv(4096)
                 command = command.decode("utf-8")
 
                 if command.startswith('GET'):
-                    print("Handling GET request")
                     self.handle_http(connection)
-                    print("Handled GET request")
                 elif command.startswith("CONNECT"):
                     self.handle_connect(connection, command)
                 else:
@@ -80,17 +77,28 @@ class Server(object):
                 while len(self.searching) >= 2:
                     with self.comp_lock:
                         p1 = random.choice(self.searching)
+                        print("Matchmaking with ", p1)
                         p2 = self.comp.find_best_match(p1, self.searching)
+                        if p1 not in self.connected_players:
+                            print("Removing disconnected player from queue: ", p1.id)
+                            self.searching.remove(p1)
+                            continue
+                        if p2 not in self.connected_players:
+                            print("Removing disconnected player from queue: ", p2.id)
+                            self.searching.remove(p2)
+                            continue
                         print(self.searching, p1, p2)
                         self.searching.remove(p1)
                         self.searching.remove(p2)
 
                         for p in [self.connected_players[p1], self.connected_players[p2]]:
                             p.game_start()
+
+                        print(self.connected_players)
                         game = self.env.start_new_game([self.connected_players[p1], self.connected_players[p2]], self)
                         self.active_games[game] = threading.Thread(target=game.play_game)
                         self.active_games[game].start()
-            time.sleep(0.01)
+            time.sleep(0.001)
 
     def end_game(self, winners, losers, game):
         winner_ids, loser_ids = list([p.id for p in winners]), list([p.id for p in losers])
@@ -104,7 +112,7 @@ class Server(object):
 
         with self.searching_lock:
             self.searching += list([p.id for p in winners]) + list([p.id for p in losers])
-        print("Game closed on Server")
+        #print("Game closed on Server")
 
     def end_game_draw(self, players, game):
 
@@ -118,7 +126,14 @@ class Server(object):
 
         with self.searching_lock:
             self.searching += pids
-        print("Game closed on Server")
+        #print("Game closed on Server")
+
+    def deregister_player(self, p: NetworkPlayer):
+        print("Player %s disconnected" % p.id)
+        with self.connected_lock:
+            del self.connected_players[p.id]
+
+
 
 
 
