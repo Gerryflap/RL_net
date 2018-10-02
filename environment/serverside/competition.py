@@ -40,7 +40,18 @@ class Competition(object):
 
         return elo_diff
 
+    def register_draw(self, ids):
+        avg_score = sum([self.ranks[id] for id in ids]) / len(ids)
+        print("Draw, avg_score = ", avg_score)
+
+        for id in ids:
+            gradient = avg_score - self.ranks[id]
+            gradient /= 2
+
+            self.ranks[id] += gradient
+
     def find_best_match(self, id, online_players):
+        print(online_players)
         p, diff = min([(player, abs(self.ranks[id] - self.ranks[player])) for player in online_players if player != id],
                       key=lambda t: t[1])
         return p

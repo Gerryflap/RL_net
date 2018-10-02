@@ -106,14 +106,14 @@ if __name__ == "__main__":
     from server import Server
     import threading
 
-    server_name = ('localhost', 1337)
+    server_name = ('localhost', 1333)
 
     s = Server(server_name, "ttt_rankings", TTTEnvironment())
     clients = [
         RandomAgent(server_name, "Random1", TTTEnvironment()),
         RandomAgent(server_name, "Random2", TTTEnvironment()),
         QAgent(server_name, "QAgent", TTTEnvironment(), 0.9, 0.1),
-        QAgent(server_name, "QAgent2", TTTEnvironment(), 0.9, 0.1),
+        #QAgent(server_name, "QAgent2", TTTEnvironment(), 0.9, 0.1),
         QAgent(server_name, "ShortSightedQAgent", TTTEnvironment(), 0.1, 0.1),
         QAgent(server_name, "HighGammaQAgent", TTTEnvironment(), 0.999, 0.1),
         QAgent(server_name, "SlowQAgent", TTTEnvironment(), 0.9, 0.01),

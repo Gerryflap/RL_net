@@ -74,19 +74,20 @@ class Server(object):
     def game_queue_manager(self):
         while self.running:
             with self.searching_lock:
-                while len(self.searching) >= 2:
-                    with self.comp_lock:
+                with self.comp_lock:
+                    while len(self.searching) >= 2:
                         p1 = random.choice(self.searching)
                         #print("Matchmaking with ", p1)
+
                         p2 = self.comp.find_best_match(p1, self.searching)
                         if p1 not in self.connected_players:
-                            print("Removing disconnected player from queue: ", p1.id)
+                            print("Removing disconnected player from queue: ", p1)
                             self.searching.remove(p1)
-                            continue
+                            break
                         if p2 not in self.connected_players:
-                            print("Removing disconnected player from queue: ", p2.id)
+                            print("Removing disconnected player from queue: ", p2)
                             self.searching.remove(p2)
-                            continue
+                            break
                         #print(self.searching, p1, p2)
                         self.searching.remove(p1)
                         self.searching.remove(p2)
@@ -98,7 +99,7 @@ class Server(object):
                         game = self.env.start_new_game([self.connected_players[p1], self.connected_players[p2]], self)
                         self.active_games[game] = threading.Thread(target=game.play_game)
                         self.active_games[game].start()
-            time.sleep(0.1)
+            time.sleep(0.001)
 
     def end_game(self, winners, losers, game):
         winner_ids, loser_ids = list([p.id for p in winners]), list([p.id for p in losers])
@@ -122,7 +123,9 @@ class Server(object):
             p.game_end([], pids)
 
         with self.comp_lock:
-            del self.active_games[game]
+            self.comp.register_draw(pids)
+            if game in self.active_games:
+                del self.active_games[game]
             del game
 
         with self.searching_lock:
@@ -131,8 +134,10 @@ class Server(object):
 
     def deregister_player(self, p: NetworkPlayer):
         print("Player %s disconnected" % p.id)
-        with self.connected_lock:
+        with self.connected_lock and self.comp_lock and self.searching_lock:
             del self.connected_players[p.id]
+            if p in self.searching:
+                self.searching.remove(p)
 
 
 

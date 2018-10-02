@@ -18,8 +18,6 @@ class Game(object):
         try:
             thread = self.players[player_index].request_action(game_state)
         except BrokenPipeError or OSError as e:
-            self.report_draw()
-            print("Game ended abruptly, calling a Draw!")
             self.wait_queue[player_index] = "DISCONNECT!"
             return
         self.wait_queue[player_index] = thread
