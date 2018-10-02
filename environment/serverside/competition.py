@@ -1,6 +1,6 @@
 import json
 import os
-
+import random
 
 class Competition(object):
     def __init__(self, fpath):
@@ -52,8 +52,10 @@ class Competition(object):
 
     def find_best_match(self, id, online_players):
         print(online_players)
-        p, diff = min([(player, abs(self.ranks[id] - self.ranks[player])) for player in online_players if player != id],
+        s = sorted([(player, abs(self.ranks[id] - self.ranks[player])) for player in online_players if player != id],
                       key=lambda t: t[1])
+
+        p, diff = random.choice(s[:3])
         return p
 
     def exit(self):
@@ -66,7 +68,7 @@ class Competition(object):
 
 if __name__ == "__main__":
 
-    import random
+
     import matplotlib.pyplot as plt
 
     steps = 100000

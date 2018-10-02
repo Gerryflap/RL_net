@@ -147,5 +147,5 @@ class Server(object):
 
 
 if __name__ == "__main__":
-    s = Server(('localhost', 1338), "leaderboard.json", Environment())
+    s = Server(('localhost', 1337), "leaderboard.json", Environment())
     s.run()

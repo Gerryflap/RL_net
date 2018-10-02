@@ -1,5 +1,8 @@
+import math
+
 from agents.q_agent import QAgent
 from agents.random_agent import RandomAgent
+from agents.softmax_q_agent import SMaxQAgent
 from environment.action import Action
 from environment.environment import Environment
 from environment.serverside.game import Game, DisconnectException
@@ -106,19 +109,19 @@ if __name__ == "__main__":
     from server import Server
     import threading
 
-    server_name = ('localhost', 1333)
+    server_name = ('localhost', 1337)
 
     s = Server(server_name, "ttt_rankings", TTTEnvironment())
     clients = [
         RandomAgent(server_name, "Random1", TTTEnvironment()),
         RandomAgent(server_name, "Random2", TTTEnvironment()),
-        QAgent(server_name, "QAgent", TTTEnvironment(), 0.9, 0.1),
         #QAgent(server_name, "QAgent2", TTTEnvironment(), 0.9, 0.1),
         QAgent(server_name, "ShortSightedQAgent", TTTEnvironment(), 0.1, 0.1),
         QAgent(server_name, "HighGammaQAgent", TTTEnvironment(), 0.999, 0.1),
         QAgent(server_name, "SlowQAgent", TTTEnvironment(), 0.9, 0.01),
         QAgent(server_name, "FastQAgent", TTTEnvironment(), 0.9, 0.3),
-    ]
+    ] + list([QAgent(server_name, "QAgent%d"%i, TTTEnvironment(), 0.9, 0.1) for i in range(10)]) \
+        + list([SMaxQAgent(server_name, "SMaxQAgent%d" % i, TTTEnvironment(), 0.9, 0.1, temp=math.exp((i-5))) for i in range(10)])
 
     for c in clients:
         threading.Thread(target=c.run).start()
